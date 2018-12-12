@@ -24,6 +24,7 @@ products = {"4823063105439": "sadochok",
             "4820104250554": "ananas",
             "4823012232124": "konti"}
 vector_ext = ".npz"
+ness_folders = ['transfLearning/image_vectors', "transfLearning/images", "transfLearning/NNs", "new_image"]
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--take_photos", action='store_true', help='create new product class and take a photos')
@@ -40,14 +41,12 @@ print(args)
 # capture_zone = [100, 200, 200, 250]
 
 
-def windowEnumerationHandler(hwnd, top_windows):
-    if win32gui.IsWindowVisible(hwnd):
-        if 'python' in win32gui.GetWindowText(hwnd):
-            print(hwnd)
-            win32gui.BringWindowToTop(hwnd)
-
-def enumHandler(hwnd):
-    win32gui.EnumWindows(windowEnumerationHandler, None)
+def check_folders(path_list):
+    if not isinstance(path_list, list):
+        path_list = [path_list]
+    for i in path_list:
+        if not os.path.exists(i):
+            os.makedirs(i)
 
 def take_photos():
     print("Press `f` to take photo from camera. Photos stores in folder `new`. To finish press `q`.")
@@ -158,6 +157,8 @@ def reco_process(model):
 
 def main():
     model = build_model(args['model'])
+
+    check_folders()
 
     op = {
         '1': take_photos,
