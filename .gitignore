@@ -1,6 +1,6 @@
 __pycache__/
 *.jpg
-*.pnz
+*.npz
 .svn/
 *_env/
 transfLearning/NNs/*
