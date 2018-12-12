@@ -63,7 +63,7 @@ from PIL import Image
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
-MODEL_PATH = "transfLearn/NNs/inceptionv4/"
+MODEL_PATH = "transfLearning/NNs/inceptionv4/"
 # pylint: enable=line-too-long
 
 def download_and_extract(url, dest_directory):

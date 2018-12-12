@@ -38,7 +38,7 @@ ap.add_argument("-i", "--camera_id", default=0, help="set camera id to use")
 args = vars(ap.parse_args())
 print(args)
 
-# capture_zone = [100, 200, 200, 250]
+capture_zone = None #[100, 200, 200, 250]
 
 
 def check_folders(path_list):
@@ -158,7 +158,7 @@ def reco_process(model):
 def main():
     model = build_model(args['model'])
 
-    check_folders()
+    check_folders(ness_folders)
 
     op = {
         '1': take_photos,
