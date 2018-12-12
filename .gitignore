@@ -1,0 +1,8 @@
+__pycache__/
+*.jpg
+*.pnz
+.svn/
+*_env/
+transfLearning/NNs/*
+transfLearning/images/*
+transfLearning/image_vectors/*
