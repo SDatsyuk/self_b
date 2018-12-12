@@ -90,7 +90,7 @@ class InceptionV4:
   def __init__(self):
     self.sess = tf.Session()
     self.layer_dims = 2048
-    self.pb_path = 'transfLearn/NNs/inceptionv4/classify_image_graph_def.pb'
+    self.pb_path = 'transfLearning/NNs/inceptionv4/classify_image_graph_def.pb'
     if not os.path.exists(self.pb_path):
       download_and_extract(DATA_URL, MODEL_PATH)
       # print(self.pb_path, "not exists")
