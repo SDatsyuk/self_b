@@ -8,8 +8,6 @@ import glob
 import numpy as np
 import shutil
 
-from win32 import win32gui
-
 import barcode_reader
 from transfLearning import transflearn
 from transfLearning import cluster_vectors
