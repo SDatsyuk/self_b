@@ -16,6 +16,7 @@ from transfLearning import cluster_vectors
 from transfLearning.model_builder import build_model
 
 from config import Config as conf
+from utils.extract_background import extract_background
 
 products = {"4823063105439": "sadochok",
             "4820048190138": "bread",
@@ -48,7 +49,24 @@ def check_folders(path_list):
         if not os.path.exists(i):
             os.makedirs(i)
 
-def take_photos():
+def create_back_image():
+    print('Press `f` to create background image')
+    cap = cv2.VideoCapture(0)
+    while True:
+        _, frame = cap.read()
+        frame = frame[:,:440]
+
+
+        cv2.imshow('background', frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('f'):
+            back = frame
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+    return frame
+
+def take_photos(back):
     print("Press `f` to take photo from camera. Photos stores in folder `new`. To finish press `q`.")
 
     if not os.path.exists(args['save_path']):
@@ -62,8 +80,12 @@ def take_photos():
             break
         while True:
             _, frame = cap.read()
+            frame = frame[:,:440]
+            obj = extract_background(back, frame)
             # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
+            (x, y, w, h) = cv2.boundingRect(obj)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.imshow('frame', frame)
 
             key = cv2.waitKey(30)
@@ -71,8 +93,9 @@ def take_photos():
             if key & 0xFF == ord('q'):
                 break
             if key & 0xFF == ord('f'):
+
                 file_path = os.path.join(args['save_path'], "{}_{}.jpg".format(category, str(uuid.uuid4())))
-                cv2.imwrite(file_path, frame)
+                cv2.imwrite(file_path, frame[y:y+h, x:x+w])
                 print("%s image saved to %s" % (category, file_path))
 
     cap.release()
@@ -103,7 +126,7 @@ def convert_images_to_vector(model):
     return True
 
 
-def reco_process(model):
+def reco_process(model, back):
     
     camera = cv2.VideoCapture(args['camera_id'])
     camera.set(1, 60)
@@ -117,15 +140,20 @@ def reco_process(model):
     while True:
         status, frame = camera.read()
 
-        if capture_zone:
-            frame = frame[capture_zone[0]: capture_zone[1], capture_zone[2]: capture_zone[3]]
+        # if capture_zone:
+            # frame = frame[capture_zone[0]: capture_zone[1], capture_zone[2]: capture_zone[3]]
+        back = back[:, :400]
+        frame = frame[:, :400]
+        obj = extract_background(back, frame)
+        (x, y, w, h) = cv2.boundingRect(obj)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
         # barcodes = barcode_reader.find_barcode(frame)
         # barcodes = [bar for bar in barcodes if bar.data.decode() in products]
 
         # viz_boxes = barcode_reader.viz_barcodes(frame.copy(), barcodes)
         # if barcodes:
         st_time = time.time()
-        feature_vector = model.run_inference_on_image(frame)
+        feature_vector = model.run_inference_on_image(frame[y:y+h, x:x+w])
         # print(feature_vector.shape)
 
         nearest_neighbors = cluster_vectors.nearest_neighbors(ann_tree, feature_vector)
@@ -159,28 +187,23 @@ def main():
     model = build_model(args['model'])
 
     check_folders(ness_folders)
-
-    op = {
-        '1': take_photos,
-        '2': convert_images_to_vector,
-        '3': reco_process
-    }
+    background = create_back_image()
 
     while True:
         print("1 - take new photos")
         print("2 - make vectors from image")
         print("3 - test NN")
         ch = input("Enter (q - exit): ")
-        if ch not in op:
+        if ch not in ['1', '2', '3']:
             if ch == 'q':
                 break
             raise ValueError("Enter only 1, 2, 3")
         if ch == '1':
-            take_photos()
+            take_photos(background)
         elif ch == '2':
             ret = convert_images_to_vector(model)
         else:
-            reco_process(model)
+            reco_process(model, background)
 
 
     # cv2.destroyAllWindows()
